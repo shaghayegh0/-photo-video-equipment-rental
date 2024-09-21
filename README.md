@@ -1,1 +1,1 @@
-# -photo-video-equipment-rental
+# photo-video-equipment-rental
