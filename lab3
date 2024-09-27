@@ -1,0 +1,394 @@
+--Create Statements
+
+CREATE TABLE Customer (
+    Customer_ID INT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    Email VARCHAR(100) NOT NULL UNIQUE,
+    Phone VARCHAR(20) NOT NULL UNIQUE,
+    Address VARCHAR(255)
+);
+
+CREATE TABLE Customer_Phone (
+    Phone_ID INT PRIMARY KEY,
+    Customer_ID INT,
+    Customer_Phone_Number VARCHAR(20) NOT NULL UNIQUE,
+    CONSTRAINT fk_customer FOREIGN KEY (Customer_ID) REFERENCES Customer(Customer_ID)
+);
+
+
+
+CREATE TABLE Customer_Email (
+     Email_ID INT PRIMARY KEY, 
+     Customer_ID INT,
+     Customer_Email VARCHAR(100) NOT NULL UNIQUE,
+     CONSTRAINT fk_customer_email FOREIGN KEY (Customer_ID) REFERENCES Customer(Customer_ID) 
+);
+
+
+CREATE TABLE Staff (
+    Staff_ID INT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    Position VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE Equipment (
+    Equipment_ID INT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    Equipment_Type_ID INT NOT NULL,
+    Rental_Status VARCHAR(50) DEFAULT ‘Available’ CHECK (Rental_Status IN ('Available', 'Rented', 'Under Maintenance', 'Out of Service')),
+    Rental_Price_PerDay DECIMAL(10, 2) NOT NULL,
+    Condition VARCHAR(100) NOT NULL,
+    Purchase_Date DATE NOT NULL,
+    Equipment_price DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (Equipment_Type_ID) REFERENCES Equipment_Type(Equipment_Type_ID)
+);
+
+CREATE TABLE Equipment_Type (
+    Equipment_Type_ID INT PRIMARY KEY,
+    Equipment_Type_Name  VARCHAR(100) NOT NULL UNIQUE
+);
+
+CREATE TABLE Rental (
+    Rental_ID INT PRIMARY KEY,
+    Staff_ID INT,
+    Customer_ID INT,
+    Equipment_ID INT,
+    Rental_Date DATE NOT NULL,
+    Estimated_Return_Date DATE NOT NULL,
+    Estimated_Duration_Days INT,
+    Price DECIMAL(10, 2),
+    Status VARCHAR(50) DEFAULT ‘Ongoing’ CHECK (Status IN ('Ongoing', 'Completed', 'Overdue')),
+    FOREIGN KEY (Staff_ID) REFERENCES Staff(Staff_ID),
+    FOREIGN KEY (Customer_ID) REFERENCES Customer(Customer_ID),
+    FOREIGN KEY (Equipment_ID) REFERENCES Equipment(Equipment_ID)
+);
+
+CREATE TABLE Rental_History (
+    Rental_History_ID INT PRIMARY KEY,
+    Staff_ID INT,
+    Customer_ID INT,
+    Equipment_ID INT,
+    Rental_Date DATE NOT NULL,
+    Duration INT,
+    Rental_Return DATE NOT NULL,
+    Price DECIMAL(10, 2)
+);
+
+CREATE TABLE Overdue (
+    Overdue_ID INT PRIMARY KEY,
+    Rental_ID INT,
+    Customer_ID INT,
+    Overdue_Date DATE NOT NULL,
+    Amount DECIMAL(10, 2),
+    Payment_Method VARCHAR(50),
+    Status VARCHAR(50) DEFAULT ‘Paid’ CHECK (Status IN ('Declined', 'Paid')),
+    FOREIGN KEY (Rental_ID) REFERENCES Rental(Rental_ID),
+    FOREIGN KEY (Customer_ID) REFERENCES Customer(Customer_ID)
+);
+
+CREATE TABLE Payment (
+    Payment_ID INT PRIMARY KEY,
+    Rental_ID INT,
+    Customer_ID INT,
+    Payment_Date DATE NOT NULL,
+    Amount DECIMAL(10, 2),
+    Payment_Method VARCHAR(50),
+    Status VARCHAR(50) DEFAULT ‘Pending’ CHECK (Status IN ('Declined', 'Accepted', 'Pending')),
+    FOREIGN KEY (Rental_ID) REFERENCES Rental(Rental_ID),
+    FOREIGN KEY (Customer_ID) REFERENCES Customer(Customer_ID)
+);
+
+CREATE TABLE Payment_History (
+    Payment_History_ID INT PRIMARY KEY,
+    Payment_ID INT,
+    Rental_ID INT,
+    Customer_ID INT,
+    Payment_Date DATE NOT NULL,
+    Amount DECIMAL(10, 2),
+    Payment_Method VARCHAR(50),
+    FOREIGN KEY (Payment_ID) REFERENCES Payment(Payment_ID),
+    FOREIGN KEY (Rental_ID) REFERENCES Rental(Rental_ID),
+    FOREIGN KEY (Customer_ID) REFERENCES Customer(Customer_ID)
+);
+
+CREATE TABLE Reservation (
+    Reservation_ID INT PRIMARY KEY,
+    Customer_ID INT,
+    Equipment_ID INT,
+    Reservation_Date DATE NOT NULL,
+    Expiration_Date DATE NOT NULL,
+    Status VARCHAR(50) DEFAULT ‘Pending’ CHECK (Status IN ('Confirmed', 'Canceled', 'Pending')),
+    FOREIGN KEY (Customer_ID) REFERENCES Customer(Customer_ID),
+    FOREIGN KEY (Equipment_ID) REFERENCES Equipment(Equipment_ID)
+);
+
+CREATE TABLE Maintenance (
+    Maintenance_ID INT PRIMARY KEY,
+    Staff_ID INT,
+    Equipment_ID INT,
+    Maintenance_Start_Date DATE NOT NULL,
+    Maintenance_Cost DECIMAL(10, 2),
+    Expected_Completion_Date DATE,
+    Status VARCHAR(50) DEFAULT ‘Processing’ CHECK (Status IN ('Processing', 'Completed', 'Out of Service')),
+    FOREIGN KEY (Staff_ID) REFERENCES Staff(Staff_ID),
+    FOREIGN KEY (Equipment_ID) REFERENCES Equipment(Equipment_ID)
+);
+
+
+--Sequence & Triggers Statements
+
+CREATE SEQUENCE customer_id_seq
+START WITH 1
+INCREMENT BY 1;
+
+CREATE OR REPLACE TRIGGER customer_id_trigger
+BEFORE INSERT ON Customer
+FOR EACH ROW
+BEGIN
+    :new.Customer_ID := customer_id_seq.NEXTVAL;
+END;
+/
+
+CREATE SEQUENCE phone_id_seq
+START WITH 1
+INCREMENT BY 1;
+
+CREATE OR REPLACE TRIGGER phone_id_trigger
+BEFORE INSERT ON Customer_Phone
+FOR EACH ROW
+BEGIN
+    :new.Phone_ID := phone_id_seq.NEXTVAL;
+END;
+/
+
+CREATE SEQUENCE email_id_seq
+START WITH 1
+INCREMENT BY 1;
+
+CREATE TRIGGER email_trigger
+BEFORE INSERT ON Customer_Email
+FOR EACH ROW
+BEGIN
+    :new.Email_ID := email_id_seq.NEXTVAL;
+END;
+/
+
+
+CREATE SEQUENCE staff_id_seq
+START WITH 1
+INCREMENT BY 1;
+
+CREATE OR REPLACE TRIGGER staff_id_trigger
+BEFORE INSERT ON Staff
+FOR EACH ROW
+BEGIN
+    :new.Staff_ID := staff_id_seq.NEXTVAL;
+END;
+/
+
+
+CREATE SEQUENCE equipment_id_seq
+START WITH 1
+INCREMENT BY 1;
+
+CREATE OR REPLACE TRIGGER equipment_id_trigger
+BEFORE INSERT ON Equipment
+FOR EACH ROW
+BEGIN
+    :new.Equipment_ID := equipment_id_seq.NEXTVAL;
+END;
+/
+
+
+
+CREATE SEQUENCE equipment_type_id_seq
+START WITH 1
+INCREMENT BY 1;
+
+CREATE OR REPLACE TRIGGER equipment_type_id_trigger
+BEFORE INSERT ON Equipment_Type
+FOR EACH ROW
+BEGIN
+    :new.Equipment_Type_ID := equipment_type_id_seq.NEXTVAL;
+END;
+/
+
+CREATE SEQUENCE rental_id_seq
+START WITH 1
+INCREMENT BY 1;
+
+CREATE OR REPLACE TRIGGER rental_id_trigger
+BEFORE INSERT ON Rental
+FOR EACH ROW
+BEGIN
+    :new.Rental_ID := rental_id_seq.NEXTVAL;
+END;
+/
+
+
+CREATE SEQUENCE rental_history_id_seq
+START WITH 1
+INCREMENT BY 1;
+
+CREATE OR REPLACE TRIGGER rental_history_id_trigger
+BEFORE INSERT ON Rental_History
+FOR EACH ROW
+BEGIN
+    :new.Rental_History_ID := rental_history_id_seq.NEXTVAL;
+END;
+/
+
+CREATE SEQUENCE overdue_id_seq
+START WITH 1
+INCREMENT BY 1;
+
+CREATE OR REPLACE TRIGGER overdue_id_trigger
+BEFORE INSERT ON Overdue
+FOR EACH ROW
+BEGIN
+    :new.Overdue_ID := overdue_id_seq.NEXTVAL;
+END;
+/
+
+
+CREATE SEQUENCE payment_id_seq
+START WITH 1
+INCREMENT BY 1;
+
+CREATE OR REPLACE TRIGGER payment_id_trigger
+BEFORE INSERT ON Payment
+FOR EACH ROW
+BEGIN
+    :new.Payment_ID := payment_id_seq.NEXTVAL;
+END;
+/
+
+CREATE SEQUENCE payment_history_id_seq
+START WITH 1
+INCREMENT BY 1;
+
+CREATE OR REPLACE TRIGGER payment_history_id_trigger
+BEFORE INSERT ON Payment_History
+FOR EACH ROW
+BEGIN
+    :new.Payment_History_ID := payment_history_id_seq.NEXTVAL;
+END;
+/
+
+
+CREATE SEQUENCE reservation_id_seq
+START WITH 1
+INCREMENT BY 1;
+
+CREATE OR REPLACE TRIGGER reservation_id_trigger
+BEFORE INSERT ON Reservation
+FOR EACH ROW
+BEGIN
+    :new.Reservation_ID := reservation_id_seq.NEXTVAL;
+END;
+/
+
+
+CREATE SEQUENCE maintenance_id_seq
+START WITH 1
+INCREMENT BY 1;
+
+CREATE OR REPLACE TRIGGER maintenance_id_trigger
+BEFORE INSERT ON Maintenance
+FOR EACH ROW
+BEGIN
+    :new.Maintenance_ID := maintenance_id_seq.NEXTVAL;
+END;
+/
+
+
+--Insert Statements
+
+
+--Insert statements for Customer table
+INSERT INTO Customer (Name, Email, Phone, Address) VALUES 
+( 'Sarah', 'sarah_james@gmail.com', '703-701-9964', '825, rue Saint-Laurent O, Longueuil, Quebec');
+
+INSERT INTO Customer (Name, Email, Phone, Address) VALUES 
+('Bob', 'bob@gmail.com', '703-710-8261', '200 County Ct Blvd, Brampton, Ontario');
+
+-- Insert statements for Staff table
+INSERT INTO Staff (Name, Position) VALUES 
+('Donald', 'Manager');
+
+INSERT INTO Staff (Name, Position) VALUES 
+('Kate', 'Employee');
+
+-- Insert statements for Equipment Type table
+INSERT INTO Equipment_Type (Equipment_Type_Name) VALUES 
+('Action Cameras');
+
+INSERT INTO Equipment_Type (Equipment_Type_Name) VALUES 
+('Digital Cameras');
+
+INSERT INTO Equipment_Type (Equipment_Type_Name) VALUES 
+('Film Cameras');
+
+-- Insert statements for Equipment table
+INSERT INTO Equipment (Name, Equipment_Type_ID, Rental_Status, Rental_Price_PerDay, Condition, Purchase_Date, Equipment_price) VALUES 
+('Go Pro', 1, 'Rented', 60, 'Good', TO_DATE('2016-07-06', 'YYYY-MM-DD'), 399);
+
+INSERT INTO Equipment (Name, Equipment_Type_ID, Rental_Status, Rental_Price_PerDay, Condition, Purchase_Date, Equipment_price) VALUES 
+('DSLR', 2, 'Available', 100, 'Brand new', TO_DATE('2019-08-03', 'YYYY-MM-DD'), 649.99);
+
+INSERT INTO Equipment (Name, Equipment_Type_ID, Rental_Status, Rental_Price_PerDay, Condition, Purchase_Date, Equipment_price) VALUES 
+('Fujifilm Discovery', 3, 'Rented', 50, 'Well used', TO_DATE('2013-08-17', 'YYYY-MM-DD'), 262.8);
+
+
+
+
+--Insert statements for Rental table
+INSERT INTO Rental (Staff_ID, Customer_ID, Equipment_ID, Rental_Date, Estimated_Return_Date, Estimated_Duration_Days, Price, Status) VALUES 
+(2, 1, 2, TO_DATE('2019-06-05', 'YYYY-MM-DD'), TO_DATE('2019-06-10', 'YYYY-MM-DD'), 5, 1500, 'Ongoing');
+
+INSERT INTO Rental (Staff_ID, Customer_ID, Equipment_ID, Rental_Date, Estimated_Return_Date, Estimated_Duration_Days, Price, Status) VALUES 
+(1, 2, 3, TO_DATE('2022-07-01', 'YYYY-MM-DD'), TO_DATE('2022-07-17', 'YYYY-MM-DD'), 7, 700, 'Ongoing');
+
+
+-- Insert statements for Rental History table
+INSERT INTO Rental_History (Staff_ID, Customer_ID, Equipment_ID, Rental_Date, Duration, Rental_Return, Price) VALUES 
+(2, 1, 2, TO_DATE('2019-06-05', 'YYYY-MM-DD'), 5, TO_DATE('2019-06-10', 'YYYY-MM-DD'), 1500);
+
+
+-- Insert statements for Overdue table
+INSERT INTO Overdue (Rental_ID, Customer_ID, Overdue_Date, Amount, Payment_Method, Status) VALUES 
+(1, 1, TO_DATE('2024-09-28', 'YYYY-MM-DD'), 649.99, 'cash', 'Declined');
+
+INSERT INTO Overdue (Rental_ID, Customer_ID, Overdue_Date, Amount, Payment_Method, Status) VALUES 
+(2, 2, TO_DATE('2024-08-27', 'YYYY-MM-DD'), 399, 'card', 'Paid');
+
+
+-- Insert statements for Payment table
+INSERT INTO Payment (Rental_ID, Customer_ID, Payment_Date, Amount, Payment_Method, Status) VALUES 
+(1, 1, TO_DATE('2024-10-20', 'YYYY-MM-DD'), 10, 'cash', 'Declined');
+
+INSERT INTO Payment (Rental_ID, Customer_ID, Payment_Date, Amount, Payment_Method, Status) VALUES 
+(2, 2, TO_DATE('2024-10-20', 'YYYY-MM-DD'), 20, 'card', 'Accepted');
+
+-- Insert statements for Payment History table
+INSERT INTO Payment_History (Payment_ID, Rental_ID, Customer_ID, Payment_Date, Amount, Payment_Method) VALUES 
+(1, 1, 1, TO_DATE('2024-10-20', 'YYYY-MM-DD'), 30, 'cash');
+
+INSERT INTO Payment_History (Payment_ID, Rental_ID, Customer_ID, Payment_Date, Amount, Payment_Method) VALUES 
+(2, 2, 2, TO_DATE('2024-10-20', 'YYYY-MM-DD'), 10, 'card');
+
+
+-- Insert statements for Reservation table
+INSERT INTO Reservation (Customer_ID, Equipment_ID, Reservation_Date, Expiration_Date, Status) VALUES 
+(1, 1, TO_DATE('2024-10-20', 'YYYY-MM-DD'), TO_DATE('2024-10-20', 'YYYY-MM-DD'), 'Confirmed');
+
+INSERT INTO Reservation (Customer_ID, Equipment_ID, Reservation_Date, Expiration_Date, Status) VALUES 
+(2, 2, TO_DATE('2024-10-20', 'YYYY-MM-DD'), TO_DATE('2024-10-20', 'YYYY-MM-DD'), 'Canceled');
+
+-- Insert statements for Maintenance table
+INSERT INTO Maintenance (Staff_ID, Equipment_ID, Maintenance_Start_Date, Maintenance_Cost, Expected_Completion_Date, Status) VALUES 
+(1, 1, TO_DATE('2024-10-20', 'YYYY-MM-DD'), 30, TO_DATE('2024-10-20', 'YYYY-MM-DD'), 'Processing');
+
+INSERT INTO Maintenance (Staff_ID, Equipment_ID, Maintenance_Start_Date, Maintenance_Cost, Expected_Completion_Date, Status) VALUES 
+(2, 2, TO_DATE('2024-10-20', 'YYYY-MM-DD'), 10, TO_DATE('2024-10-20', 'YYYY-MM-DD'), 'Completed');
+
