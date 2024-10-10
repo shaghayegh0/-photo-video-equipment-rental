@@ -50,7 +50,7 @@ FROM Maintenance m
 JOIN Equipment eq ON m.Equipment_ID = eq.Equipment_ID
 WHERE m.Status = 'Processing';
 
-SELECT * FROM Payments_With_Details_View;
+SELECT * FROM Maintenance_Activities_View;
 
 -- ---------------------------------------------
 -- Join Queries
