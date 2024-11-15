@@ -5,9 +5,9 @@ sqlplus64 "d1yeung/06145080@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(Host=oracle.cs.
 SELECT DISTINCT Name FROM Customer;
 
 -- 2. Select all equipment available for rent sorted by rental price per day (descending)
-SELECT Name, Rental_Price_PerDay, Condition FROM Equipment
-WHERE Rental_Status = 'Available'
-ORDER BY Rental_Price_PerDay DESC;
+SELECT Name, EQUIPMENT_PRICE, Condition FROM Equipment
+WHERE STATUS = 'Available'
+ORDER BY EQUIPMENT_PRICE DESC;
 
 -- 3. Retrieve all overdue payments with status 'Paid'
 SELECT * FROM Overdue
@@ -32,6 +32,7 @@ FETCH FIRST 3 ROWS ONLY;
 SELECT Name, Position FROM Staff
 ORDER BY Name;
 
+
 -- 7. Select all equipment under maintenance and their respective maintenance cost
 SELECT eq.Name, m.Maintenance_Cost 
 FROM Equipment eq
@@ -42,21 +43,25 @@ ORDER BY m.Maintenance_Cost DESC;
 -- 8. List distinct equipment types in the database
 SELECT DISTINCT Equipment_Type_Name FROM Equipment_Type;
 
+
 -- 9. Calculate the total rental revenue for each staff member
-SELECT s.Name, SUM(r.Price) AS Total_Revenue 
+SELECT s.Name, SUM(r.RENTAIL_PRICE) AS Total_Revenue 
 FROM Staff s
 JOIN Rental r ON s.Staff_ID = r.Staff_ID
 GROUP BY s.Name
 ORDER BY Total_Revenue DESC;
+
+
 
 -- 10. Retrieve all payment records with payment methods that were declined
 SELECT * FROM Payment
 WHERE Status = 'Declined';
 
 -- 11. Count the total number of overdue payments grouped by customer
-SELECT c.Name, COUNT(o.Overdue_ID) AS Total_Overdue
-FROM Customer c
-JOIN Overdue o ON c.Customer_ID = o.Customer_ID
+SELECT c.Name AS Customer_Name, COUNT(o.Overdue_ID) AS Total_Overdue
+FROM Rental_Customer rc
+JOIN Overdue o ON rc.Rental_ID = o.Rental_ID
+JOIN Customer c ON rc.Customer_ID = c.Customer_ID
 GROUP BY c.Name;
 
 -- 12. List all equipment purchased in 2023, sorted by purchase date
