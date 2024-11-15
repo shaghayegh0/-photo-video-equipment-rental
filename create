@@ -76,8 +76,7 @@ CREATE TABLE Overdue (
     Amount DECIMAL(10, 2),
     Payment_Method VARCHAR(50),
     Status VARCHAR(50) DEFAULT 'Paid' CHECK (Status IN ('Declined', 'Paid')),
-    FOREIGN KEY (Rental_ID) REFERENCES Rental(Rental_ID),
-    FOREIGN KEY (Customer_ID) REFERENCES Customer(Customer_ID)
+    FOREIGN KEY (Rental_ID) REFERENCES Rental(Rental_ID)
 );
 
 CREATE TABLE Rental_Customer (
@@ -94,8 +93,7 @@ CREATE TABLE Payment (
     Amount DECIMAL(10, 2),
     Payment_Method VARCHAR(50),
     Status VARCHAR(50) DEFAULT 'Pending' CHECK (Status IN ('Declined', 'Accepted', 'Pending')),
-    FOREIGN KEY (Rental_ID) REFERENCES Rental(Rental_ID),
-    FOREIGN KEY (Customer_ID) REFERENCES Customer(Customer_ID)
+    FOREIGN KEY (Rental_ID) REFERENCES Rental(Rental_ID)
 );
 
 CREATE TABLE Payment_History (
