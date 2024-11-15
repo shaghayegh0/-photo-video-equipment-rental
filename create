@@ -21,12 +21,13 @@ CREATE TABLE Equipment (
     Equipment_ID INT GENERATED AS IDENTITY PRIMARY KEY,
     Name VARCHAR(100) NOT NULL,
     Equipment_Type_ID INT NOT NULL,
-    Status VARCHAR(50) DEFAULT 'Available' CHECK (Rental_Status IN ('Available', 'Under Maintenance', 'Out of Service')),
+    Status VARCHAR(50) DEFAULT 'Available' CHECK (Status IN ('Available', 'Under Maintenance', 'Out of Service')), -- Fixed CHECK constraint
     Condition VARCHAR(100) NOT NULL,
     Purchase_Date DATE NOT NULL,
     Equipment_Price DECIMAL(10, 2) NOT NULL,
     FOREIGN KEY (Equipment_Type_ID) REFERENCES Equipment_Type(Equipment_Type_ID)
 );
+
 
 CREATE TABLE Customer_Phone (
     Phone_ID INT GENERATED AS IDENTITY PRIMARY KEY,
