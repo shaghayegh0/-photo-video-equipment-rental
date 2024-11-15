@@ -16,6 +16,10 @@ ALTER TABLE Reservation DISABLE CONSTRAINT fk_reservation_customer;
 ALTER TABLE Reservation DISABLE CONSTRAINT fk_reservation_equipment;
 ALTER TABLE Maintenance DISABLE CONSTRAINT fk_maintenance_equipment;
 ALTER TABLE Maintenance DISABLE CONSTRAINT fk_maintenance_staff;
+ALTER TABLE Rental_Customer DISABLE CONSTRAINT fk_maintenance_staff;
+ALTER TABLE Payment_Rental_Customer DISABLE CONSTRAINT fk_maintenance_staff;
+
+
 
 -- Truncate the contents of the tables
 TRUNCATE TABLE Payment_History;
@@ -29,6 +33,8 @@ TRUNCATE TABLE Equipment;
 TRUNCATE TABLE Equipment_Type;
 TRUNCATE TABLE Staff;
 TRUNCATE TABLE Customer;
+TRUNCATE TABLE Rental_Customer;
+TRUNCATE TABLE Payment_Rental_Customer;
 
 -- Enable foreign key constraints again
 ALTER TABLE Overdue ENABLE CONSTRAINT fk_overdue_rental;
@@ -45,6 +51,11 @@ ALTER TABLE Reservation ENABLE CONSTRAINT fk_reservation_customer;
 ALTER TABLE Reservation ENABLE CONSTRAINT fk_reservation_equipment;
 ALTER TABLE Maintenance ENABLE CONSTRAINT fk_maintenance_equipment;
 ALTER TABLE Maintenance ENABLE CONSTRAINT fk_maintenance_staff;
+ALTER TABLE Rental_Customer ENABLE CONSTRAINT fk_rental_customer_customer;
+ALTER TABLE Payment_Rental_Customer ENABLE CONSTRAINT fk_payment_rental_customer_rental;
+ALTER TABLE Payment_Rental_Customer ENABLE CONSTRAINT fk_payment_rental_customer_customer;
+
+
 
 EOF
 
