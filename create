@@ -21,8 +21,7 @@ CREATE TABLE Equipment (
     Equipment_ID INT GENERATED AS IDENTITY PRIMARY KEY,
     Name VARCHAR(100) NOT NULL,
     Equipment_Type_ID INT NOT NULL,
-    Rental_Status VARCHAR(50) DEFAULT 'Available' CHECK (Rental_Status IN ('Available', 'Rented', 'Under Maintenance', 'Out of Service')),
-    Rental_Price_PerDay DECIMAL(10, 2) NOT NULL,
+    Status VARCHAR(50) DEFAULT 'Available' CHECK (Rental_Status IN ('Available', 'Under Maintenance', 'Out of Service')),
     Condition VARCHAR(100) NOT NULL,
     Purchase_Date DATE NOT NULL,
     Equipment_Price DECIMAL(10, 2) NOT NULL,
@@ -51,7 +50,7 @@ CREATE TABLE Rental (
     Rental_Date DATE NOT NULL,
     Estimated_Return_Date DATE NOT NULL,
     Estimated_Duration_Days INT,
-    Price DECIMAL(10, 2),
+    Rentail_Price DECIMAL(10, 2) NOT NULL,
     Status VARCHAR(50) DEFAULT 'Ongoing' CHECK (Status IN ('Ongoing', 'Completed', 'Overdue')),
     FOREIGN KEY (Staff_ID) REFERENCES Staff(Staff_ID),
     FOREIGN KEY (Customer_ID) REFERENCES Customer(Customer_ID),
@@ -72,7 +71,6 @@ CREATE TABLE Rental_History (
 CREATE TABLE Overdue (
     Overdue_ID INT GENERATED AS IDENTITY PRIMARY KEY,
     Rental_ID INT,
-    Customer_ID INT,
     Overdue_Date DATE NOT NULL,
     Amount DECIMAL(10, 2),
     Payment_Method VARCHAR(50),
@@ -81,10 +79,16 @@ CREATE TABLE Overdue (
     FOREIGN KEY (Customer_ID) REFERENCES Customer(Customer_ID)
 );
 
+CREATE TABLE Rental_Customer (
+    Rental_ID INT PRIMARY KEY,
+    Customer_ID INT NOT NULL,
+    FOREIGN KEY (Customer_ID) REFERENCES Customer(Customer_ID)
+);
+
+
 CREATE TABLE Payment (
     Payment_ID INT GENERATED AS IDENTITY PRIMARY KEY,
     Rental_ID INT,
-    Customer_ID INT,
     Payment_Date DATE NOT NULL,
     Amount DECIMAL(10, 2),
     Payment_Method VARCHAR(50),
@@ -95,16 +99,22 @@ CREATE TABLE Payment (
 
 CREATE TABLE Payment_History (
     Payment_History_ID INT GENERATED AS IDENTITY PRIMARY KEY,
-    Payment_ID INT,
-    Rental_ID INT,
-    Customer_ID INT,
+    Payment_ID INT NOT NULL,
     Payment_Date DATE NOT NULL,
     Amount DECIMAL(10, 2),
     Payment_Method VARCHAR(50),
-    FOREIGN KEY (Payment_ID) REFERENCES Payment(Payment_ID),
+    FOREIGN KEY (Payment_ID) REFERENCES Payment(Payment_ID)
+);
+
+CREATE TABLE Payment_Rental_Customer (
+    Payment_ID INT PRIMARY KEY,
+    Rental_ID INT NOT NULL,
+    Customer_ID INT NOT NULL,
     FOREIGN KEY (Rental_ID) REFERENCES Rental(Rental_ID),
     FOREIGN KEY (Customer_ID) REFERENCES Customer(Customer_ID)
 );
+
+
 
 CREATE TABLE Reservation (
     Reservation_ID INT GENERATED AS IDENTITY PRIMARY KEY,
