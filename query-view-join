@@ -18,7 +18,8 @@ SELECT * FROM Rental_History_View;
 CREATE VIEW Overdue_Payments_View AS
 SELECT o.Overdue_ID, c.Name AS Customer_Name, o.Amount, o.Overdue_Date, o.Status
 FROM Overdue o
-JOIN Customer c ON o.Customer_ID = c.Customer_ID
+JOIN Rental_Customer rc ON o.Rental_ID = rc.Rental_ID
+JOIN Customer c ON c.Customer_ID = rc.Customer_ID
 WHERE o.Status = 'Paid';
 
 SELECT * FROM Overdue_Payments_View;
@@ -26,10 +27,10 @@ SELECT * FROM Overdue_Payments_View;
 
 -- 3. View for available equipment with type name
 CREATE VIEW Available_Equipment_View AS
-SELECT eq.Name, et.Equipment_Type_Name, eq.Rental_Price_PerDay
+SELECT eq.Name, et.Equipment_Type_Name, eq.EQUIPMENT_PRICE
 FROM Equipment eq
 JOIN Equipment_Type et ON eq.Equipment_Type_ID = et.Equipment_Type_ID
-WHERE eq.Rental_Status = 'Available';
+WHERE eq.status = 'Available';
 
 SELECT * FROM Available_Equipment_View;
 
@@ -38,8 +39,9 @@ SELECT * FROM Available_Equipment_View;
 CREATE VIEW Payments_With_Details_View AS
 SELECT p.Payment_ID, c.Name AS Customer_Name, r.Rental_ID, p.Payment_Date, p.Amount, p.Status
 FROM Payment p
-JOIN Customer c ON p.Customer_ID = c.Customer_ID
-JOIN Rental r ON p.Rental_ID = r.Rental_ID;
+JOIN PAYMENT_RENTAL_CUSTOMER prc ON prc.payment_id = p.payment_id
+JOIN Customer c ON prc.Customer_ID = c.Customer_ID
+JOIN Rental r ON prc.Rental_ID = r.Rental_ID;
 
 SELECT * FROM Payments_With_Details_View;
 
@@ -65,25 +67,37 @@ JOIN Equipment eq ON r.Equipment_ID = eq.Equipment_ID;
 -- 2. Join query to find all payments with associated customer names and rental details
 SELECT p.Payment_ID, c.Name AS Customer_Name, r.Rental_ID, p.Amount, p.Payment_Method, p.Status 
 FROM Payment p
-JOIN Customer c ON p.Customer_ID = c.Customer_ID
-JOIN Rental r ON p.Rental_ID = r.Rental_ID;
+JOIN PAYMENT_RENTAL_CUSTOMER prc ON prc.payment_ID = p.payment_id
+JOIN Customer c ON prc.Customer_ID = c.Customer_ID
+JOIN Rental r ON prc.Rental_ID = r.Rental_ID;
 
 -- 3. Join query to retrieve all overdue payments with rental and customer details
 SELECT o.Overdue_ID, c.Name AS Customer_Name, o.Amount, r.Rental_ID, o.Status 
 FROM Overdue o
-JOIN Rental r ON o.Rental_ID = r.Rental_ID
-JOIN Customer c ON o.Customer_ID = c.Customer_ID;
+JOIN rental_customer rc ON rc.rental_id = o.rental_id
+JOIN Rental r ON rc.Rental_ID = r.Rental_ID
+JOIN Customer c ON rc.Customer_ID = c.Customer_ID;
 
 -- 4. Join query to list all equipment that is currently rented along with the customer renting it
-SELECT eq.Name AS Equipment_Name, c.Name AS Customer_Name, r.Rental_Date, r.Estimated_Return_Date 
-FROM Equipment eq
-JOIN Rental r ON eq.Equipment_ID = r.Equipment_ID
-JOIN Customer c ON r.Customer_ID = c.Customer_ID
-WHERE eq.Rental_Status = 'Rented';
+SELECT 
+    e.Name AS Equipment_Name, 
+    c.Name AS Customer_Name, 
+    r.Rental_Date, 
+    r.Estimated_Return_Date
+FROM Equipment e
+JOIN Rental r ON e.Equipment_ID = r.Equipment_ID
+JOIN Rental_Customer rc ON r.Rental_ID = rc.Rental_ID
+JOIN Customer c ON rc.Customer_ID = c.Customer_ID
+WHERE r.Status = 'Ongoing';
 
 -- 5. Join query to list equipment along with the type and rental status
-SELECT eq.Name AS Equipment_Name, et.Equipment_Type_Name, eq.Rental_Status 
-FROM Equipment eq
-JOIN Equipment_Type et ON eq.Equipment_Type_ID = et.Equipment_Type_ID;
+SELECT 
+    e.Name AS Equipment_Name,
+    et.Equipment_Type_Name AS Equipment_Type,
+    r.Status AS Rental_Status
+FROM Equipment e
+LEFT JOIN Equipment_Type et ON e.Equipment_Type_ID = et.Equipment_Type_ID
+LEFT JOIN Rental r ON e.Equipment_ID = r.Equipment_ID;
+
 
 -- End of file
