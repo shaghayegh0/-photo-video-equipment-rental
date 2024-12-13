@@ -53,7 +53,7 @@ JOIN Equipment eq ON m.Equipment_ID = eq.Equipment_ID
 WHERE m.Status = 'Processing';
 
 SELECT * FROM Maintenance_Activities_View;
-
+ 
 -- ---------------------------------------------
 -- Join Queries
 -- ---------------------------------------------
